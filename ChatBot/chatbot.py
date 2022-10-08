@@ -26,3 +26,24 @@ while not user_number.isnumeric():
 for value in range(int(user_number)+1):
     print(f"{value} !")
 print("Completed, have a nice day!")
+print("Let's test your programming knowledge.")
+print("""How can I find out the id of string?
+1. isinstance()
+2. type()
+3. id()
+4. isnumeric()""")
+user_response1 = input("> ")
+while user_response1 != "3" or not user_response1.isnumeric():
+    print("Please, try again")
+    user_response1 = input("> ")
+print("""what type of data is the number 0.1?
+1. String
+2. Integer
+3. Bool
+4. Float""")
+user_response2 = input("> ")
+while user_response2 != "4" or not user_response2.isnumeric():
+    print("Please, try again")
+    user_response2 = input("> ")
+print("All answers are correct!")
+print("Congratulations, have a nice day!")
