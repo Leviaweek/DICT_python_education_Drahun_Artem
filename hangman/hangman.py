@@ -1,89 +1,124 @@
-"""Game Hangman"""
-
+"""Game class file"""
 import random
+import enum
 
-WORDS = ["javascript", "python", "programming", "function"]
+class GameState(enum.Enum):
+    """Hangman gamestate"""
+    GAME_MOVE = 1
+    GAME_WIN = 2
+    GAME_LOSE = 3
 
-def main():
-    """Main menu"""
+class HangMan:
+    """Hangman class"""
 
-    print("\t\t\tHANGMAN")
-    print("To start write \"Start\", to exit write \"Exit\"")
-    if input("> ").lower() == "start":
-        hangman_game()
-    else:
-        print("Goodbye")
+    def __init__(self):
+        self.words = ["python", "javascript", "programming", "interpreter", "compiler"]
+        self.game_state = GameState.GAME_MOVE
+        self.closed_word = []
+        self.user_letter = ""
+        self.game_word = ""
+        self.used_letters = set()
+        self.mistakes = 0
 
+    def game_state_creating(self) -> None:
+        """Creating game state"""
+        self.game_state = GameState.GAME_MOVE
 
-def hangman_game():
-    """Game start point"""
+    def closed_word_creating(self) -> None:
+        """Creating closed word"""
+        self.closed_word = list("*" * len(self.game_word))
 
-    game_word = random.choice(WORDS) #Выбор случайного слова
-    game_closed_word = list("-" * len(game_word)) #Закрытое слово
-    used_letters = []
-    mistakes = 0
+    def game_word_creating(self) -> None:
+        """Creating game word"""
+        self.game_word = random.choice(self.words)
 
-    for letter in range(0,3):
-        game_closed_word[letter] = game_word[letter] #Открытие первых трёх букв
-    print("LET'S PLAY A GAME!!!")
-    print("CAN YOU GUESS THE WORD?")
-    print("IF NOT, THEN YOU WILL BE KILLED.")
-    mistakes = checker(game_closed_word, game_word, mistakes, used_letters)
-    if mistakes == 8:
-        print("You made 8 mistakes and has been killed")
-        print(f"Word is {game_word}")
-    elif mistakes == 9:
-        print("You don't guess")
-        print(f"Word is {game_word}")
-    elif mistakes < 8:
-        print(f"You win, word is {game_word}")
-    print("Want to try again?")
-    print("If yes, write yes, if not, write something")
-    if list(input("> ").lower()) == 'yes':
-        main()
-    else:
-        print("Goodbye")
+    def used_letters_creating(self) -> None:
+        """Creating used letters set"""
+        self.used_letters = set()
 
-def checker(game_closed_word, game_word, mistakes, used_letters):
-    """Word checker"""
+    def mistakes_creating(self) -> None:
+        """Setting mistakes"""
+        self.mistakes = 0
 
-    while "".join(game_closed_word) != game_word:
-        used_letter_indicator = False #Обновляющийся индиктор для использованных букв
-        print("Closed word: ", "".join(game_closed_word)) #Вывод массива в виде единого слова
-        print("If you input all word, you have only one attempt")
-        print("You can write used letter, which are open by the game")
-        user_letter = input("input a letter or full word: > ")
-        while (user_letter.isnumeric()
-                or user_letter == ''
-                or user_letter == ' '):
-            user_letter = input("Please, try again: > ")
-        user_letter = user_letter.lower()
-        if len(user_letter) != 1:
-            if user_letter != game_word:
-                mistakes = 9
+    def printer(self) -> None:
+        """Print main method"""
+        print(f"{self.mistakes} mistakes")
+        print("".join(self.closed_word))
+
+    def inputing(self) -> None:
+        """All user inputs"""
+        while True:
+            self.user_letter = input(">>> ").lower()
+            if self.user_letter > 'z' or self.user_letter < 'a':
+                print("Input only english letters!")
+                continue
+            if len(self.user_letter) == 1 or len(self.user_letter) == len(self.game_word):
                 break
-            break
-        for letter in used_letters: #Проверка наличия буквы в списке используемых букв
-            if user_letter == letter.lower():
-                print("You use this letter")
-                used_letter_indicator = True
-                break
-        if used_letter_indicator is True:
-            continue
-        local_errors = 0
-        for ind, letter in enumerate(game_closed_word):
-            if user_letter == game_word[ind]:
-                game_closed_word[ind] = user_letter
-            else: local_errors += 1
-        if local_errors == len(game_word):
-            mistakes += 1
-            print("You mistake")
-            print(f"You have {mistakes} mistakes")
-        used_letters.append(user_letter)
-        if mistakes == 8:
-            break
-    return mistakes
+            print("input only number or full word")
 
+    def user_move(self) -> None:
+        """User move and check method"""
+        if len(self.user_letter) != 1:
+            if self.user_letter == self.game_word:
+                self.game_state = GameState.GAME_WIN
+                return
+            self.game_state = GameState.GAME_LOSE
 
-if __name__ == "__main__":
-    main()
+        if self.user_letter in self.used_letters:
+            print("You use this letter")
+            return
+
+        self.used_letters.add(self.user_letter)
+
+        if self.user_letter in self.game_word:
+            for i, _ in enumerate(self.game_word):
+                if self.user_letter == self.game_word[i]:
+                    self.closed_word[i] = self.game_word[i]
+        else:
+            print("Mistake!")
+            self.mistakes += 1
+            return
+
+        if self.mistakes == 8:
+            self.game_state = GameState.GAME_LOSE
+            return
+
+        if "".join(self.closed_word) == self.game_word:
+            self.game_state = GameState.GAME_WIN
+
+    def game_loop(self) -> None:
+        """Game looping"""
+        self.game_word_creating()
+        self.closed_word_creating()
+        self.mistakes_creating()
+        self.game_state_creating()
+        self.used_letters_creating()
+        while True:
+            self.printer()
+            self.inputing()
+            self.user_move()
+            match self.game_state:
+                case GameState.GAME_WIN:
+                    print(f"You win! Word is {self.game_word}")
+                    return
+                case GameState.GAME_LOSE:
+                    print(f"You lose! Word is {self.game_word}")
+                    return
+
+    def game_menu(self) -> None:
+        """Game main menu"""
+        print("\t\tHANGMAN")
+        while True:
+            try:
+                print("Type \"play\" to play the game, \"exit\" to quit:")
+                user_input = input(">>> ").lower()
+                if user_input == "play":
+                    self.game_loop()
+                elif user_input == "exit":
+                    print("Goodbye")
+                    return
+                else:
+                    print("Incorrect input")
+            except KeyboardInterrupt:
+                print("Ok, goodbye")
+                return
