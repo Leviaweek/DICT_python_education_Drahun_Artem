@@ -44,7 +44,7 @@ class Test(ABC):
             print(question)
             while True:
                 try:
-                    answer = float(input(">>> "))
+                    answer = float(input(">>> ").strip())
                     break
                 except ValueError:
                     print("Incorrect input")
